@@ -2,7 +2,7 @@
 name = "agentflow"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["groq", "psycopg[binary]", "python-dotenv", "pydantic>=2"]
+dependencies = ["groq", "psycopg[binary]", "python-dotenv", "pydantic>=2", "fastapi", "uvicorn"]  # httpx: solo pruebas
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "test_herramientas.py"]

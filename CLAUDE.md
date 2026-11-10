@@ -28,7 +28,14 @@ Archivos del prototipo en la raíz (`agente.py`, `herramientas.py`, `database.py
 ## Reglas de trabajo
 - Ninguna llamada a Groq/Gemini ni servicios externos sin autorización explícita; pruebas con mocks.
 - No leer ni mostrar `.env`. No hacer push. Una funcionalidad por entrega; esperar aprobación entre fases.
-- Fase 2 completa: historial ✔ · ejecuciones ✔ · reportes ✔ (`/reporte`, tool `reporte_ventas`, CSV en `reportes/`, ignorado por git). Siguiente: Fase 3 FastAPI (requiere aprobación).
+- Fases 1-2 completas (commits f2836d1). Fase 3 FastAPI: entrega 1 ✔ (base: app, auth, CORS, errores, middleware) · 2 ✔ (endpoints chat/conversaciones/ejecuciones/reportes, límites) · 3 ✔ (OpenAPI, CORS, no exposición de clave, docs). **Fase 3 completa.** Diseño en `docs/api-design.md`.
 - Ejecuciones: `ejecuciones`/`ejecucion_herramientas`; guardan IDs, estado, tokens, duración y códigos de error, nunca texto. Una fila `en_curso` antigua = desenlace desconocido (proceso interrumpido).
-- Pendiente a futuro: propiedad de conversaciones por usuario (hoy no hay autenticación), FastAPI (F3), React (F4).
+- Pendiente a futuro: propiedad de conversaciones por usuario (hoy no hay autenticación), React (F4).
 - Reportes: datos `real` y `demo` siempre por separado (total combinado explícito). Migración 006 (pendiente de aplicar) marca las ventas 1-3 del prototipo como demo; tras aplicarla no habrá ventas reales y la sección real sale en cero. `cerrar_interrumpidas` (al iniciar la CLI) marca `en_curso` antiguas como error/interrumpida (desenlace desconocido).
+
+## API (Fase 3)
+- Ejecutar: `.venv\Scripts\python.exe -m uvicorn agentflow.api.app:crear_app_desde_entorno --factory --host 127.0.0.1`
+- `agentflow/api/`: `app` (fábrica `crear_app(ajustes, servicios)`), `config` (env: `AGENTFLOW_API_KEY` ≥32 car., `AGENTFLOW_CORS_ORIGINS`, `AGENTFLOW_ENV` dev|prod), `seguridad` (Bearer, fallo cerrado), `errors` (formato único), `middleware`, `servicios` (DI; Groq perezoso), `limites` (429: chat 10/min, 2 simultáneos, lecturas 120/min, 10 fallos auth/min), `esquemas` (Pydantic), `rutas/` (conversaciones, ejecuciones, reportes).
+- Desarrollo: `AGENTFLOW_ENV=dev` habilita `/docs`; CORS local: `AGENTFLOW_CORS_ORIGINS=http://localhost:5173`. Detalle en `docs/api-design.md`.
+- **Clave compartida, un solo usuario**: sin propietario de conversaciones; quien tiene la clave ve todo.
+- Reglas: routers finos que reutilizan `Agente`/repos; protegidos con `requerir_api_key`; errores solo vía `ErrorAPI`; pruebas con `Servicios` falsos (nunca Groq); CORS sin `*`; el usuario genera la API key en su `.env`.

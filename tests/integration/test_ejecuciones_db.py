@@ -76,3 +76,15 @@ def test_ejecucion_finalizada_es_inmutable_y_la_app_no_puede_borrar(conexion):
 def test_checks_rechazan_estado_invalido(conexion):
     with pytest.raises(psycopg.errors.CheckViolation):
         conexion.execute("INSERT INTO ejecuciones (estado, pregunta_chars) VALUES ('hecho', 1)")
+
+
+def test_detalle_devuelve_ejecucion_con_herramientas_y_none_si_no_existe(conexion):
+    f = lambda: _SinCommit(conexion)  # noqa: E731
+    repo = RegistroEjecuciones(f)
+    ejec = repo.iniciar(None, 30)
+    repo.finalizar(ejec, "ok", None, "modelo", 150, 30, 2, 800, HERR)
+    d = repo.detalle(ejec)
+    assert (d["id"], d["estado"], d["tokens_entrada"], d["conversacion_id"]) == (ejec, "ok", 150, None)
+    assert [h["herramienta"] for h in d["herramientas"]] == ["ventas_totales", "ejecutar_sql"]
+    assert d["herramientas"][0]["argumentos"] == {"periodo": "este_mes"} and d["herramientas"][1]["ok"] is False
+    assert repo.detalle("00000000-0000-0000-0000-000000000000") is None
