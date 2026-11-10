@@ -22,4 +22,8 @@ CASOS = [
          {**_MES, "limite": 5}),
     Caso("¿Qué producto cayó más en octubre respecto a septiembre?", "productos_en_caida",
          {"periodo_actual": "2026-10-01/2026-10-31", "periodo_anterior": "2026-09-01/2026-09-30", "limite": 5}),
+    Caso("Prepara un reporte de ventas de este mes", "reporte_ventas",
+         {"periodo": "este_mes", "comparar_con": "", "origen": "todos"}),
+    Caso("Genera un reporte de octubre comparado con septiembre", "reporte_ventas",
+         {"periodo": "2026-10-01/2026-10-31", "comparar_con": "2026-09-01/2026-09-30", "origen": "todos"}),
 ]

@@ -21,10 +21,10 @@ class LLMTorpe:
         return RespuestaLLM(llamadas=[LlamadaModelo("1", "ventas_totales", '{"periodo": "este_mes"}')])
 
 
-def test_dataset_tiene_al_menos_12_casos_y_cubre_las_4_herramientas():
+def test_dataset_tiene_al_menos_12_casos_y_cubre_las_5_herramientas():
     assert len(CASOS) >= 12
     assert {c.herramienta for c in CASOS} == {"ventas_totales", "ventas_por_producto",
-                                              "comparar_periodos", "productos_en_caida"}
+                                              "comparar_periodos", "productos_en_caida", "reporte_ventas"}
 
 
 def test_todos_los_casos_esperados_son_validos_para_el_registro():

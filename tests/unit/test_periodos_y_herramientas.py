@@ -46,7 +46,7 @@ def registro():
 def test_esquemas_sin_titulos_y_sin_campos_extra(registro):
     esquemas = registro.esquemas()
     assert [e["function"]["name"] for e in esquemas] == [
-        "ventas_totales", "ventas_por_producto", "comparar_periodos", "productos_en_caida"]
+        "ventas_totales", "ventas_por_producto", "comparar_periodos", "productos_en_caida", "reporte_ventas"]
     for e in esquemas:
         assert "title" not in str(e["function"]["parameters"])
         assert e["function"]["parameters"]["additionalProperties"] is False

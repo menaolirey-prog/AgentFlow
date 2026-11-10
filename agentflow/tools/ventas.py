@@ -3,8 +3,9 @@ from datetime import date
 
 from agentflow.config import MONEDA
 from agentflow.tools.periodos import resolver_periodo
+from agentflow.tools.reportes import construir_reporte
 from agentflow.tools.schemas import (
-    CompararPeriodosArgs, ProductosEnCaidaArgs, VentasPorProductoArgs, VentasTotalesArgs,
+    CompararPeriodosArgs, ProductosEnCaidaArgs, ReporteVentasArgs, VentasPorProductoArgs, VentasTotalesArgs,
 )
 
 
@@ -14,6 +15,10 @@ def _dinero(valor) -> float:
 
 def _pct(cambio, base) -> float | None:
     return round(float(cambio) / float(base) * 100, 1) if base else None
+
+
+def reporte_ventas(args: ReporteVentasArgs, repo, hoy: date) -> dict:
+    return construir_reporte(repo, args.periodo, args.comparar_con or None, args.origen, hoy)
 
 
 def ventas_totales(args: VentasTotalesArgs, repo, hoy: date) -> dict:

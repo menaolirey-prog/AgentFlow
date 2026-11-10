@@ -9,7 +9,7 @@ from pydantic import BaseModel, ValidationError
 from agentflow.observability.logging import registrar
 from agentflow.tools import ventas
 from agentflow.tools.schemas import (
-    CompararPeriodosArgs, ProductosEnCaidaArgs, VentasPorProductoArgs, VentasTotalesArgs,
+    CompararPeriodosArgs, ProductosEnCaidaArgs, ReporteVentasArgs, VentasPorProductoArgs, VentasTotalesArgs,
 )
 
 MENSAJE_ERROR_INTERNO = "No se pudo consultar los datos en este momento."
@@ -50,6 +50,11 @@ HERRAMIENTAS_VENTAS = (
     Herramienta("productos_en_caida",
                 "Productos cuyos ingresos bajaron entre dos periodos, ordenados por mayor caída.",
                 ProductosEnCaidaArgs, ventas.productos_en_caida),
+    Herramienta("reporte_ventas",
+                "Reporte comercial completo de un periodo (ingresos, unidades, productos y participación), con "
+                "datos reales y demo (ficticios) por separado y comparación opcional. Úsala cuando pidan un "
+                "'reporte' o 'resumen comercial'.",
+                ReporteVentasArgs, ventas.reporte_ventas),
 )
 
 

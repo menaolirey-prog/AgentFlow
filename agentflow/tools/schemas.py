@@ -19,6 +19,18 @@ class _ArgsBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+def _periodo_opcional(valor: str) -> str:
+    return "" if not valor.strip() else _periodo_valido(valor)
+
+
+class ReporteVentasArgs(_ArgsBase):
+    periodo: PeriodoTexto = Field(description=f"Periodo del reporte: {_FORMATO}.")
+    comparar_con: Annotated[str, AfterValidator(_periodo_opcional)] = Field(
+        default="", description="Periodo base para comparar (mismo formato); vacío si no se pide comparación.")
+    origen: Literal["todos", "real", "demo"] = Field(
+        default="todos", description="'real' = solo ventas reales, 'demo' = solo ficticias, 'todos' = ambas por separado.")
+
+
 class VentasTotalesArgs(_ArgsBase):
     periodo: PeriodoTexto = Field(description=f"Periodo a consultar: {_FORMATO}.")
 

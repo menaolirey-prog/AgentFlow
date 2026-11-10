@@ -15,5 +15,6 @@ def construir_prompt_sistema(hoy: date) -> str:
         "- Para periodos usa los nombres predefinidos ('este_mes', 'mes_anterior', ...) o 'AAAA-MM-DD/AAAA-MM-DD'.\n"
         "- Si una herramienta devuelve error, explícalo en una frase; no inventes datos.\n"
         "- Responde en español, breve. Montos como 'S/ 1,234.56'; porcentajes con un decimal.\n"
+        "- En reportes indica qué cifras son demo (ficticias) y cuáles reales; nunca las mezcles sin decirlo.\n"
         "- Solo ventas de este negocio; rechaza amablemente otros temas."
     )

@@ -49,6 +49,17 @@ class RepositorioVentas:
         """
         return self._consultar(sql, (inicio, fin_exclusivo, limite))
 
+    def por_origen_producto(self, inicio: date, fin_exclusivo: date) -> list[tuple]:
+        """(es_demo, producto, unidades, ingresos, n_ventas): base de los reportes, sin mezclar demo con real."""
+        sql = f"""
+            SELECT v.es_demo, p.nombre, SUM(v.cantidad), SUM({_INGRESO}), COUNT(*)
+            FROM ventas v JOIN productos p ON p.id_producto = v.id_producto
+            WHERE v.fecha >= %s AND v.fecha < %s
+            GROUP BY v.es_demo, p.id_producto, p.nombre
+            ORDER BY v.es_demo, p.nombre
+        """
+        return self._consultar(sql, (inicio, fin_exclusivo))
+
     def caidas(self, actual: tuple[date, date], anterior: tuple[date, date], limite: int) -> list[tuple]:
         """actual/anterior = (inicio, fin_exclusivo). Devuelve (nombre, ingresos_actual, ingresos_anterior)."""
         sql = f"""

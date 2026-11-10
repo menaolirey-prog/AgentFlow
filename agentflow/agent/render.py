@@ -42,8 +42,42 @@ def _caidas(d: dict) -> str:
     return f"Productos en caída ({cabecera}):\n" + "\n".join(lineas)
 
 
+def _var(total: dict) -> str:
+    if "variacion_ingresos" not in total:
+        return ""
+    return f" | vs anterior: {total['variacion_ingresos']:+,.2f} ({_pct(total['variacion_ingresos_pct'])})"
+
+
+def formatear_reporte(d: dict) -> str:
+    """Texto determinista del reporte; los datos demo se rotulan siempre."""
+    cabecera = f"Reporte comercial del {_rango(d['periodo'])}"
+    if "periodo_anterior" in d:
+        cabecera += f" frente a {_rango(d['periodo_anterior'])}"
+    lineas = [cabecera]
+    if d["advertencia"]:
+        lineas.append(f"AVISO: {d['advertencia']}")
+    for origen, seccion in d["origenes"].items():
+        t = seccion["total"]
+        rotulo = "DATOS DEMO (ficticios)" if origen == "demo" else "DATOS REALES"
+        lineas.append(f"\n{rotulo}: {_s(t['ingresos'])}, {t['unidades']} unidades, "
+                      f"{t['numero_ventas']} ventas{_var(t)}")
+        if not seccion["productos"]:
+            lineas.append("- sin ventas en el periodo")
+        for p in seccion["productos"]:
+            part = "-" if p["participacion_pct"] is None else f"{p['participacion_pct']:.1f}%"
+            extra = (f" | vs anterior: {p['variacion_ingresos']:+,.2f} ({_pct(p['variacion_pct'])})"
+                     if "variacion_ingresos" in p else "")
+            lineas.append(f"- {p['producto']}: {_s(p['ingresos'])} ({p['unidades']} unidades, {part}){extra}")
+    if len(d["origenes"]) > 1:
+        t = d["total_combinado"]
+        lineas.append(f"\nTOTAL COMBINADO (real + demo): {_s(t['ingresos'])}, {t['unidades']} unidades{_var(t)}")
+    if d["producto_lider"]:
+        lineas.append(f"Producto líder por ingresos: {d['producto_lider']}")
+    return "\n".join(lineas)
+
+
 _FORMATOS = {"ventas_totales": _totales, "ventas_por_producto": _por_producto,
-             "comparar_periodos": _comparar, "productos_en_caida": _caidas}
+             "comparar_periodos": _comparar, "productos_en_caida": _caidas, "reporte_ventas": formatear_reporte}
 
 
 def plantilla_respaldo(resultados: list[ResultadoHerramienta]) -> str:

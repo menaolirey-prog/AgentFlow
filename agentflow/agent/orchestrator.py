@@ -1,9 +1,10 @@
 """Bucle del agente. El modelo propone; el código ejecuta, limita, verifica y decide cuándo parar."""
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Callable
 
+from agentflow.agent.conversacion import Conversacion  # noqa: F401  (reexportada: API estable)
 from agentflow.agent.prompts import construir_prompt_sistema
 from agentflow.agent.render import plantilla_respaldo
 from agentflow.agent.verifier import verificar_respuesta
@@ -31,16 +32,6 @@ _CORTES = {"limite_iteraciones", "limite_herramientas", "limite_tokens", "tiempo
 
 
 @dataclass
-class Conversacion:
-    """Historial en memoria (la persistencia llega en la Fase 2). Solo texto de usuario y asistente."""
-    mensajes: list[dict] = field(default_factory=list)
-    ultimo_resultado: "ResultadoAgente | None" = None
-
-    def recientes(self, maximo: int) -> list[dict]:
-        return self.mensajes[-maximo:]
-
-
-@dataclass
 class ResultadoAgente:
     respuesta: str
     estado: str           # ok | degradado | limite | error
@@ -51,15 +42,50 @@ class ResultadoAgente:
     tokens_salida: int
     llamadas_llm: int
     duracion_ms: int
+    ejecucion_id: str | None = None
 
 
 class Agente:
     def __init__(self, llm: ClienteLLM, registro: RegistroHerramientas, limites: Limites = Limites(),
                  hoy: Callable[[], date] = lambda: datetime.now(ZONA_LIMA).date(),
-                 reloj: Callable[[], float] = time.monotonic):
+                 reloj: Callable[[], float] = time.monotonic, ejecuciones=None):
         self._llm, self._registro, self._l, self._hoy, self._reloj = llm, registro, limites, hoy, reloj
+        self._ejecuciones = ejecuciones  # RegistroEjecuciones o None (sin persistencia)
 
     def responder(self, pregunta: str, conversacion: Conversacion) -> ResultadoAgente:
+        """Una solicitud = una ejecución: se abre 'en_curso' y se cierra con el resultado.
+        Si el proceso muere a mitad, la fila queda 'en_curso' (desenlace desconocido), nunca 'ok'."""
+        ejecucion_id = self._abrir_ejecucion(conversacion, len(pregunta))
+        resultado = self._responder(pregunta, conversacion)
+        resultado.ejecucion_id = ejecucion_id
+        self._cerrar_ejecucion(ejecucion_id, resultado)
+        registrar("respuesta", ejecucion_id=ejecucion_id, estado=resultado.estado, motivo=resultado.motivo,
+                  origen=resultado.origen, herramientas=len(resultado.herramientas),
+                  tokens_entrada=resultado.tokens_entrada, tokens_salida=resultado.tokens_salida,
+                  llamadas_llm=resultado.llamadas_llm, duracion_ms=resultado.duracion_ms)
+        return resultado
+
+    def _abrir_ejecucion(self, conversacion: Conversacion, pregunta_chars: int) -> str | None:
+        if self._ejecuciones is None:
+            return None
+        try:
+            return self._ejecuciones.iniciar(conversacion.id, pregunta_chars)
+        except Exception as error:  # la observabilidad nunca debe impedir responder
+            registrar("error_ejecuciones", fase="iniciar", tipo=type(error).__name__)
+            return None
+
+    def _cerrar_ejecucion(self, ejecucion_id: str | None, r: ResultadoAgente) -> None:
+        if self._ejecuciones is None or ejecucion_id is None:
+            return
+        herramientas = [{"nombre": h.nombre, "argumentos": h.argumentos, "ok": h.ok,
+                         "codigo_error": h.codigo_error, "duracion_ms": h.duracion_ms} for h in r.herramientas]
+        try:
+            self._ejecuciones.finalizar(ejecucion_id, r.estado, r.motivo, r.origen, r.tokens_entrada,
+                                        r.tokens_salida, r.llamadas_llm, r.duracion_ms, herramientas)
+        except Exception as error:
+            registrar("error_ejecuciones", fase="finalizar", tipo=type(error).__name__)
+
+    def _responder(self, pregunta: str, conversacion: Conversacion) -> ResultadoAgente:
         t0, hoy = self._reloj(), self._hoy()
         l = self._l
         mensajes = [{"role": "system", "content": construir_prompt_sistema(hoy)},
@@ -135,10 +161,6 @@ class Agente:
         resultado = ResultadoAgente(respuesta, estado, motivo, origen, ejecutadas, t_in, t_out, llamadas_llm,
                                     int((self._reloj() - t0) * 1000))
         if estado != "error":  # un fallo del proveedor no deja rastro en el historial
-            conversacion.mensajes += [{"role": "user", "content": pregunta},
-                                      {"role": "assistant", "content": respuesta}]
+            conversacion.registrar_turno(pregunta, respuesta)
         conversacion.ultimo_resultado = resultado
-        registrar("respuesta", estado=estado, motivo=motivo, origen=origen, herramientas=len(ejecutadas),
-                  tokens_entrada=t_in, tokens_salida=t_out, llamadas_llm=llamadas_llm,
-                  duracion_ms=resultado.duracion_ms)
         return resultado
