@@ -1,0 +1,11 @@
+[project]
+name = "agentflow"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["groq", "psycopg[binary]", "python-dotenv", "pydantic>=2"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "test_herramientas.py"]
+pythonpath = ["."]
+addopts = "-m 'not integration'"
+markers = ["integration: requiere PostgreSQL local (no se ejecuta por defecto)"]
