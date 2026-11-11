@@ -40,3 +40,11 @@ def test_comparacion_mes_a_mes_ejecuta(registro):
     d = registro.ejecutar("comparar_periodos", '{"periodo_actual": "mes_anterior", '
                           '"periodo_anterior": "2026-09-01/2026-09-30"}', HOY)
     assert d.ok and d.datos["anterior"]["ingresos"] > 0
+
+
+def test_origenes_distingue_demo_de_real_y_de_sin_ventas():
+    from datetime import date
+    repo = RepositorioVentas()
+    hay_demo, hay_real = repo.origenes(date(2026, 10, 1), date(2026, 11, 1))
+    assert hay_demo is True and hay_real is False  # hoy todas las ventas son ficticias (migración 006)
+    assert repo.origenes(date(2023, 10, 1), date(2023, 11, 1)) == (False, False)  # sin datos: no es "sin caídas"

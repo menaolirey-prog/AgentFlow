@@ -94,7 +94,7 @@ def test_ventas_totales():
     r = RegistroHerramientas(repo).ejecutar("ventas_totales", '{"periodo": "este_mes"}', HOY)
     assert r.ok and r.datos == {
         "moneda": "PEN", "periodo": {"inicio": "2026-11-01", "fin": "2026-11-10"},
-        "ingresos_totales": 6850.5, "unidades": 29, "numero_ventas": 12}
+        "ingresos_totales": 6850.5, "unidades": 29, "numero_ventas": 12, "origen_datos": "demo"}
     assert repo.llamadas == [("resumen", date(2026, 11, 1), date(2026, 11, 11))]  # fin exclusivo
 
 

@@ -5,6 +5,7 @@ Límite conocido: solo comprueba números escritos con dígitos; no valida la in
 """
 import re
 from dataclasses import dataclass
+from datetime import date
 
 _TOKEN = re.compile(r"\d[\d.,]*\d|\d")
 _FORMATO_VALIDO = re.compile(r"^(\d{1,3}(,\d{3})+|\d+)(\.\d+)?$")  # 1,234.56 | 1234.56 | 12
@@ -37,8 +38,11 @@ def _numeros_de(valor, destino: set[float]) -> None:
             _numeros_de(v, destino)
 
 
-def verificar_respuesta(texto: str, resultados: list[dict]) -> ResultadoVerificacion:
+def verificar_respuesta(texto: str, resultados: list[dict], hoy: date | None = None) -> ResultadoVerificacion:
+    """`hoy` (fecha del sistema, no del modelo) respalda su día/mes/año: "hasta hoy, 10 de noviembre" no es inventar."""
     permitidos: set[float] = set()
+    if hoy is not None:
+        permitidos.update((float(hoy.day), float(hoy.month), float(hoy.year)))
     for r in resultados:
         _numeros_de(r, permitidos)
     fallidas = []

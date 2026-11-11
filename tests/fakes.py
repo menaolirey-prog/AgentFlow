@@ -41,9 +41,10 @@ class LLMGuionado:
 class RepoFalso:
     """Repositorio en memoria con resultados fijos; registra las llamadas."""
 
-    def __init__(self, resumen=ResumenVentas(Decimal("1000.00"), 10, 4), productos=(), caidas=(), origen_filas=()):
+    def __init__(self, resumen=ResumenVentas(Decimal("1000.00"), 10, 4), productos=(), caidas=(), origen_filas=(), origenes=(True, False)):
         self._resumen, self._productos, self._caidas = resumen, list(productos), list(caidas)
         self._origen = origen_filas  # lista de filas, o lista de listas (una por llamada)
+        self._origenes = origenes
         self.llamadas = []
 
     def resumen(self, inicio, fin_exclusivo):
@@ -55,6 +56,9 @@ class RepoFalso:
         self.llamadas.append(("por_origen_producto", inicio, fin_exclusivo))
         o = self._origen
         return o.pop(0) if o and isinstance(o[0], list) else list(o)
+
+    def origenes(self, inicio, fin_exclusivo):
+        return self._origenes
 
     def por_producto(self, inicio, fin_exclusivo, ordenar_por, limite):
         self.llamadas.append(("por_producto", inicio, fin_exclusivo, ordenar_por, limite))

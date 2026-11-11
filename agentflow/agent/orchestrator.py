@@ -145,7 +145,7 @@ class Agente:
 
         datos = [{"argumentos": e.argumentos, "datos": e.datos} for e in ejecutadas if e.ok]  # cifras permitidas
         if texto is not None:
-            veredicto = verificar_respuesta(texto, datos)
+            veredicto = verificar_respuesta(texto, datos, hoy)
             if veredicto.ok:
                 return self._cerrar(conversacion, pregunta, t0, ejecutadas, t_in, t_out, llamadas_llm,
                                     estado="ok", motivo=None, origen="modelo", respuesta=texto)

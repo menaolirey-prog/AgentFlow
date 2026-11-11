@@ -35,6 +35,8 @@ def _comparar(d: dict) -> str:
 
 def _caidas(d: dict) -> str:
     cabecera = f"{_rango(d['periodo_actual'])} frente a {_rango(d['periodo_anterior'])}"
+    if d.get("origen_datos") == "sin_ventas":
+        return f"No hay datos: no existen ventas registradas en ninguno de los dos periodos ({cabecera})."
     if not d["productos"]:
         return f"Ningún producto registró caída de ingresos ({cabecera})."
     lineas = [f"- {p['producto']}: {_s(p['ingresos_anterior'])} -> {_s(p['ingresos_actual'])} "
@@ -76,8 +78,21 @@ def formatear_reporte(d: dict) -> str:
     return "\n".join(lineas)
 
 
-_FORMATOS = {"ventas_totales": _totales, "ventas_por_producto": _por_producto,
-             "comparar_periodos": _comparar, "productos_en_caida": _caidas, "reporte_ventas": formatear_reporte}
+_ROTULOS = {"demo": "Datos: DEMO (ficticios, no son ventas reales).", "mixto": "Datos: mezcla de reales y DEMO (ficticios).",
+            "real": "Datos: reales.",
+            "sin_ventas": "Sin ventas registradas en el periodo consultado (no hay datos; revisa el periodo)."}
+
+
+def _con_origen(formato):
+    def f(d: dict) -> str:
+        rotulo = _ROTULOS.get(d.get("origen_datos"))
+        return f"{formato(d)}\n{rotulo}" if rotulo else formato(d)
+    return f
+
+
+_FORMATOS = {"ventas_totales": _con_origen(_totales), "ventas_por_producto": _con_origen(_por_producto),
+             "comparar_periodos": _con_origen(_comparar), "productos_en_caida": _con_origen(_caidas),
+             "reporte_ventas": formatear_reporte}
 
 
 def plantilla_respaldo(resultados: list[ResultadoHerramienta]) -> str:

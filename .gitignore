@@ -7,3 +7,7 @@ __pycache__/
 logs/
 reportes/
 *.csv
+
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo

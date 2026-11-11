@@ -39,3 +39,8 @@ Archivos del prototipo en la raíz (`agente.py`, `herramientas.py`, `database.py
 - Desarrollo: `AGENTFLOW_ENV=dev` habilita `/docs`; CORS local: `AGENTFLOW_CORS_ORIGINS=http://localhost:5173`. Detalle en `docs/api-design.md`.
 - **Clave compartida, un solo usuario**: sin propietario de conversaciones; quien tiene la clave ve todo.
 - Reglas: routers finos que reutilizan `Agente`/repos; protegidos con `requerir_api_key`; errores solo vía `ErrorAPI`; pruebas con `Servicios` falsos (nunca Groq); CORS sin `*`; el usuario genera la API key en su `.env`.
+
+## Frontend (Fase 4)
+- `frontend/` (Vite + React + TS, CSS propio con tokens en `src/styles/tokens.css`). Abrir: `cd frontend; npm install; npm run dev` → http://127.0.0.1:5173. Entrega 1 ✔ (diseño aprobado, tema claro/oscuro) · Entrega 2 ✔ (integración: `src/api/cliente.ts`, chat real, conversaciones, ejecuciones, reportes+CSV; sin datos de muestra). Pruebas: `npm test` (vitest, fetch simulado). **Fase 4 completa** (entrega 3: validación, Markdown seguro, responsive 390/900/1440, límites documentados en `docs/frontend-design.md`).
+- `AGENTFLOW_API_KEY` nunca en el bundle (sin prefijo `VITE_`). Proxy de Vite (`vite.config.ts`, solo Node) lee la clave del `.env` raíz e inyecta Bearer en `/api/*`; demo pública = BFF con login propio (pendiente). Arranque: API con uvicorn (ver arriba) + `cd frontend; npm run dev`. Diseño: `docs/frontend-design.md`, `PRODUCT.md`.
+- Limitaciones (Fase 4): usuario único con clave compartida; proxy de Vite solo en desarrollo local (demo pública = BFF pendiente); datos 100 % ficticios (`es_demo`). Las herramientas de ventas devuelven `origen_datos` (demo/real/mixto/sin_ventas); el agente nunca debe llamar reales a datos demo.

@@ -37,6 +37,15 @@ class RepositorioVentas:
         ingresos, unidades, n = self._consultar(sql, (inicio, fin_exclusivo))[0]
         return ResumenVentas(Decimal(ingresos), int(unidades), int(n))
 
+    def origenes(self, inicio: date, fin_exclusivo: date) -> tuple[bool, bool]:
+        """(hay_demo, hay_real) en el rango: permite rotular el origen de las cifras de cualquier herramienta."""
+        sql = """
+            SELECT COALESCE(BOOL_OR(v.es_demo), false), COALESCE(BOOL_OR(NOT v.es_demo), false)
+            FROM ventas v WHERE v.fecha >= %s AND v.fecha < %s
+        """
+        hay_demo, hay_real = self._consultar(sql, (inicio, fin_exclusivo))[0]
+        return bool(hay_demo), bool(hay_real)
+
     def por_producto(self, inicio: date, fin_exclusivo: date, ordenar_por: str, limite: int) -> list[tuple]:
         orden = _ORDEN[ordenar_por]  # KeyError si no es una clave conocida
         sql = f"""
