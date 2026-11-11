@@ -7,6 +7,7 @@ y automatizaciones. Documentación de producto futura en inglés; conversación 
 - Pruebas unitarias (sin red): `.venv\Scripts\python.exe -m pytest`
 - Integración (PostgreSQL local): `.venv\Scripts\python.exe -m pytest -m integration`
 - Agente interactivo (consume cuota Groq): `.venv\Scripts\python.exe -m agentflow [--reanudar ID]`
+- Esquema desde cero: `sql/setup/crear_rol_app.sql` (rol, contraseña por variable psql) y migraciones `000`–`006`; `scripts/verificar_migraciones.py` las comprueba en una base temporal (admin por variables PG*). `000_esquema_base.sql` crea `productos`/`ventas` + 3 productos ficticios.
 - Migraciones: `sql/migrations/NNN_*.sql` (idempotentes) y `sql/migrations/down/` (reversión). **Las aplica el usuario
   como administrador con psql**; la app usa `agentflow_app` (permisos mínimos) y nunca DDL.
 

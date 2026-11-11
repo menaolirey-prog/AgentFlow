@@ -1,8 +1,10 @@
 # AgentFlow
 
+**English** · [Español](README.es.md)
+
 A tool-using commercial analytics agent for a fictional Peruvian retail business. Users ask sales questions in Spanish; an LLM chooses from a small set of **validated tools** that query PostgreSQL, and the application — not the model — computes every figure. A React interface and a FastAPI backend sit on top.
 
-> **Demo data only.** All 84 sales in the database are fictional (`ventas.es_demo = true`). There are no real sales, and the agent and reports label demo figures as such.
+> **Demo data only.** All sales in the database are fictional (`ventas.es_demo = true`): 84 rows in the author's local database, 81 in a fresh build. There are no real sales, and the agent and reports label demo figures as such.
 
 ![Chat view with a Markdown table (dark, 1440 px)](docs/screenshots/chat-dark-1440.png)
 
@@ -79,9 +81,18 @@ Windows commands are shown; the project was developed on Windows.
 
 ### 1. Database
 
-You need a local PostgreSQL database with the `productos` and `ventas` tables from the original prototype. **Those two base tables are not created by this repository's migrations** (they only alter them and add the history/execution tables), so a fresh clone cannot build the schema from scratch yet.
+Requires a local PostgreSQL server and an administrator connection. The schema can be built from scratch:
 
-Migrations in `sql/migrations/` are applied by an administrator with `psql`, in order (`001` → `006`). The application connects with a separate least-privilege role (`agentflow_app`: `SELECT` on sales data, `SELECT`/`INSERT` on history).
+```powershell
+# as administrator (psql); creates the least-privilege app role first
+psql -d agentflow_db -v contrasena="'choose-a-password'" -f sql/setup/crear_rol_app.sql
+# then every file in order: 000 (base tables + 3 fictional products), 001 … 006
+psql -d agentflow_db -f sql/migrations/000_esquema_base.sql    # … repeat for 001 to 006
+```
+
+Use the password you chose as `DB_PASSWORD` in `.env`. Migrations are idempotent. Applied to an empty database they produce 81 fictional sales (`es_demo = true`) and no real ones. The application connects with the separate role `agentflow_app` (`SELECT` on sales data, `SELECT`/`INSERT` on history and executions, plus `UPDATE` limited to the status columns of `ejecuciones`; never DDL).
+
+`scripts/verificar_migraciones.py` checks the whole chain in a **throwaway database** (it applies 000–006 twice, checks columns, demo data and role privileges, then drops the database). It reads the admin connection from the standard `PGHOST`/`PGPORT`/`PGUSER`/`PGPASSWORD` variables.
 
 ### 2. Configuration
 
@@ -143,7 +154,7 @@ At the time of the last commit: 254 unit tests, 19 integration tests and 27 fron
 - Chat answers are text (Markdown); the structured figures and tables are in the Reports screen.
 - The API does not link a message to its execution, so a resumed conversation that contained failed turns shows no per-turn trace.
 - Rate limits are in memory (single process).
-- The database schema cannot be fully rebuilt from this repository (see [Database](#1-database)).
+- Migrations were verified from scratch only on a local PostgreSQL 18 instance. The live demo database also contains 3 extra prototype sales (marked as demo by migration 006) that a fresh build does not have (84 vs 81 rows).
 - No license file has been added yet.
 
 ## Screenshots
