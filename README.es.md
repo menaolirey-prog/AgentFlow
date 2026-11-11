@@ -158,6 +158,12 @@ En el último commit de código pasaron 254 pruebas unitarias, 19 de integració
 - Las migraciones se verificaron desde cero solo en una instancia local de PostgreSQL 18. La base demo del autor incluye 3 ventas extra del prototipo (marcadas como demo por la migración 006) que una construcción nueva no tiene (84 frente a 81 filas).
 - Aún no se ha añadido un archivo de licencia.
 
+## Demostración en video
+
+[![Video demo de AgentFlow](docs/demo/poster.png)](docs/demo/agentflow-demo.mp4)
+
+[▶ Ver la demostración de 85 segundos](docs/demo/agentflow-demo.mp4) (MP4, 1080p, sin audio). Grabada desde la interfaz real con datos demo (ficticios) únicamente; los subtítulos están en inglés y el texto de la interfaz en español.
+
 ## Capturas
 
 Tomadas con las respuestas de la API simuladas en el navegador (no es un backend real), por lo que las cifras son valores de ejemplo para revisar el diseño, no resultados de la base de datos.
