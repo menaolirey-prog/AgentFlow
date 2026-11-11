@@ -157,6 +157,12 @@ At the time of the last commit: 254 unit tests, 19 integration tests and 27 fron
 - Migrations were verified from scratch only on a local PostgreSQL 18 instance. The live demo database also contains 3 extra prototype sales (marked as demo by migration 006) that a fresh build does not have (84 vs 81 rows).
 - No license file has been added yet.
 
+## Video Demo
+
+[![AgentFlow demo video](docs/demo/poster.png)](docs/demo/agentflow-demo.mp4)
+
+[▶ Watch the 85-second demo](docs/demo/agentflow-demo.mp4) (MP4, 1080p, no audio). Recorded from the real UI using demo (fictitious) data only; the interface text is in Spanish.
+
 ## Screenshots
 
 Captured with the API responses mocked in the browser (not a live backend), so the figures shown are sample values for layout checks, not results from the database.
